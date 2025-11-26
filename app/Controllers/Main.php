@@ -9,12 +9,14 @@ use App\Models\Data;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use App\Config\ConfigAhoj;
 
 class Main extends BaseController
 {
     var $bundesland;
     var $station;
     var $data;
+    var $config;
 
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger) //konstruktor
     {
@@ -22,6 +24,7 @@ class Main extends BaseController
         $this->bundesland = new Bundesland(); //vytvoříme novou instanci třídy Bundesland
         $this->station = new Station();
         $this->data = new Data();
+        $this->config = new ConfigAhoj();
     }
     public function index()
     {
@@ -51,7 +54,7 @@ class Main extends BaseController
     public function data($idStanice)
     {
         $stanice = $this->station->find($idStanice);
-        $dataStanic = $this->data->where('Stations_ID', $idStanice)->orderBy('date','desc')->paginate(25);
+        $dataStanic = $this->data->where('Stations_ID', $idStanice)->orderBy('date','desc')->paginate($this->config->stranek);
         $pager = $this->data->pager;
         $dataObalka = [
             "stanice" => $stanice,
