@@ -1,88 +1,73 @@
 <?= $this->extend('layout/template'); ?>
 <?= $this->section('content'); ?>
-<br>
+
 <div class="d-flex justify-content-end mb-4">
-    <a class="btn btn-outline-secondary" href="<?= base_url('stanice/' . $stanice->bundesland); ?>" role="button">
+    <a class="btn btn-outline-secondary" href="<?= base_url('stanice/' . $stanice->bundesland); ?>">
         <i class="fas fa-arrow-left me-2"></i> Zpět na seznam stanic
     </a>
 </div>
 
 <div class="text-center mb-5">
     <h1 class="p-2" style="font-style: italic; font-size: 60px;">
-        Data pro stanici <?= $stanice->place; ?>
+        Data pro stanici <?= esc($stanice->place); ?>
     </h1>
     <p class="lead text-muted">Přehled meteorologických dat</p>
-    <img src="<?= base_url('img/icon4.png'); ?>" class="img-fluid my-3" style="width: 100px;" alt="Ikona">
-</div>
-
-<div class="d-flex justify-content-center mb-4">
-    <?php if ($pager): ?>
-        <?= $pager->links('default', 'pager') ?>
-    <?php endif ?>
+    <img src="<?= base_url('img/icon4.png'); ?>" class="img-fluid my-3" style="width: 100px;">
 </div>
 
 <div class="table-responsive shadow-lg rounded-3">
-    <?php
-    $table = new \CodeIgniter\View\Table();
-
-    $template = [
-        'table_open' => '<table class="table table-bordered table-striped table-hover table-sm align-middle">',
-        'thead_open' => '<thead class="table-dark text-center">',
-        'thead_close' => '</thead>',
-        'heading_row_start' => '<tr>',
-        'heading_row_end' => '</tr>',
-        'heading_cell_start' => '<th scope="col" class="text-nowrap">',
-        'heading_cell_end' => '</th>',
-        'tbody_open' => '<tbody>',
-        'tbody_close' => '</tbody>',
-        'row_start' => '<tr>',
-        'row_end'  => '</tr>',
-        'cell_start' => '<td class="text-center">',
-        'cell_end' => '</td>',
-        'cell_alt_start' => '<td class="text-center">',
-        'table_close' => '</table>'
-    ];
-
-    $table->setTemplate($template);
-
-    $table->setHeading(
-        'Datum',
-        'Kvalita',
-        'Min. T 5cm',
-        'Min. T 2m',
-        'Mid. T 2m',
-        'Max. T 2m',
-        'Vlhkost',
-        'Mid. Vítr',
-        'Max. Vítr',
-        'Světlo (min)',
-        'Mid. Mraky',
-        'Srážky',
-        'Mid. Tlak'
-    );
-
-    foreach ($dataStanic as $row) {
-        $table->addRow(
-            date('d.m.Y', strtotime($row->date)),
-            $row->quality,
-            $row->min_5cm,
-            $row->min_2m,
-            $row->mid_2m,
-            $row->max_2m,
-            $row->humidity,
-            $row->mid_wwind ?? $row->mid_wind,
-            $row->max_wind,
-            $row->sun_length,
-            $row->mid_cloud,
-            $row->precipitation,
-            $row->mid_air_pressure
-        );
-    }
-
-    echo $table->generate();
-    ?>
-    <br>
-
+    <table class="table table-bordered table-striped table-hover table-sm align-middle" id="data-table">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>Datum</th>
+                <th>Kvalita</th>
+                <th>Min. T 5cm</th>
+                <th>Min. T 2m</th>
+                <th>Mid. T 2m</th>
+                <th>Max. T 2m</th>
+                <th>Vlhkost</th>
+                <th>Mid. Vítr</th>
+                <th>Max. Vítr</th>
+                <th>Světlo</th>
+                <th>Mid. Mraky</th>
+                <th>Srážky</th>
+                <th>Mid. Tlak</th>
+            </tr>
+        </thead>
+        <tbody id="data-body">
+            <?= view('partials/dataRows', ['dataStanic' => $dataStanic]) ?>
+        </tbody>
+    </table>
 </div>
+
+<script>
+let page = 1;
+let loading = false;
+const id = <?= json_encode($idStanice) ?>;
+
+$(window).on('scroll', function () {
+    if (loading) return;
+
+    if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+        
+        loading = true;
+        page++; 
+        
+        $.get("<?= base_url('dataAjax/') ?>" + "/" + id + "?scroll=" + page, function (data) {
+            if (data.trim() !== "") {
+                $("#data-body").append(data);
+                loading = false;
+
+            } else {
+                loading = false;
+                console.log("Konec dat k načítání.");
+            }
+        }).fail(function() {
+            loading = false;
+            console.error("Chyba při načítání dat.");
+        });
+    }
+});
+</script>
 
 <?= $this->endSection(); ?>

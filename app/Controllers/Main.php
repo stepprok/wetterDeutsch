@@ -3,64 +3,68 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\Bundesland; //importujeme model bundesland
+use App\Models\Bundesland;
 use App\Models\Station;
 use App\Models\Data;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
-use Psr\Log\LoggerInterface;
 use App\Config\ConfigAhoj;
 
 class Main extends BaseController
 {
-    var $bundesland;
-    var $station;
-    var $data;
-    var $config;
+    protected $bundesland;
+    protected $station;
+    protected $data;
+    protected $perPageScroll = 20;
 
-    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger) //konstruktor
+    public function __construct()
     {
-        parent::initController($request, $response, $logger);
-        $this->bundesland = new Bundesland(); //vytvoříme novou instanci třídy Bundesland
+        $this->bundesland = new Bundesland();
         $this->station = new Station();
         $this->data = new Data();
-        $this->config = new ConfigAhoj();
     }
+
     public function index()
     {
-        $zeme = $this->bundesland->findAll(); //do zeme vypíšeme všechny data pomocí findAll()
-        //var_dump($zeme);
-        $data = [
-            "zeme" => $zeme
-        ]; //numericke pole = klíče jsou jenom čísla
-        echo view('zeme', $data);
+        return view('zeme', [
+            "zeme" => $this->bundesland->findAll()
+        ]);
     }
 
     public function stanice($id)
     {
-        $zeme = $this->bundesland->find($id);
-        $stanice = $this->station->where('bundesland', $id)->findAll();
-        $zemeName =  $zeme->name;
-
-        $data = [
-            "zeme" => $zeme,
-            "stanice" => $stanice,
-        ];
-
-        echo view('stanice', $data);
+        return view('stanice', [
+            "zeme" => $this->bundesland->find($id),
+            "stanice" => $this->station->where('bundesland', $id)->findAll(),
+        ]);
     }
-
 
     public function data($idStanice)
     {
         $stanice = $this->station->find($idStanice);
-        $dataStanic = $this->data->where('Stations_ID', $idStanice)->orderBy('date','desc')->paginate($this->config->stranek);
-        $pager = $this->data->pager;
-        $dataObalka = [
+
+        $dataStanic = $this->data
+            ->where('Stations_ID', $idStanice)
+            ->orderBy('date', 'desc')
+            ->paginate($this->perPageScroll, 'scroll');
+
+        return view('data', [
             "stanice" => $stanice,
             "dataStanic" => $dataStanic,
-            'pager' => $pager
-        ];
-        echo view('data', $dataObalka);
+            "pager" => $this->data->pager,
+            "idStanice" => $idStanice
+        ]);
+    }
+
+    public function dataAjax($idStanice)
+    {
+        $page = $this->request->getGet('page') ?? 1;
+
+        $dataStanic = $this->data
+            ->where('Stations_ID', $idStanice)
+            ->orderBy('date', 'desc')
+            ->paginate($this->perPageScroll, 'scroll', $page);
+
+        return view('partials/dataRows', [
+            "dataStanic" => $dataStanic
+        ]);
     }
 }
