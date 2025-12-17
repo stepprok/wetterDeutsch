@@ -1,6 +1,6 @@
 <?= $this->extend('layout/template'); ?>
 <?= $this->section('content'); ?>
-
+<br>
 <div class="d-flex justify-content-end mb-4">
     <a class="btn btn-outline-secondary" href="<?= base_url('stanice/' . $stanice->bundesland); ?>">
         <i class="fas fa-arrow-left me-2"></i> Zpět na seznam stanic
