@@ -67,4 +67,12 @@ class Main extends BaseController
             "dataStanic" => $dataStanic
         ]);
     }
+
+    public function vse(){
+        $stanice = $this->station->join('Bundesland','station.bundesland=bundesland.id','inner')->orderBy('place', 'asc')->findAll();
+        $data = [
+            "stanice" => $stanice,
+        ];
+        echo view('vsechnystanice', $data);
+    }
 }

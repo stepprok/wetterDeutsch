@@ -1,6 +1,5 @@
 <?= $this->extend('layout/template'); ?>
 <?= $this->section('content'); ?>
-
 <div class="container mt-5">
     <div class="text-center">
         <h1 class="p-2" style="font-style: italic; font-size: 60px; margin-top: 40px;">
@@ -9,8 +8,13 @@
 
         <img src="<?= base_url('img/icon2.png'); ?>" 
              class="img-fluid mt-3"
-             style="width: 120px;" 
+             style="width: 120px; margin-top: -50px;" 
              alt="Ikona">
+    </div>
+    <div class="d-flex justify-content-end mb-4">
+        <a class="btn btn-outline-secondary" href="<?= base_url('vsechnystanice'); ?>" role="button">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Všechny stanice
+        </a>
     </div>
 
     <div class="table-responsive table-striped mt-5">
